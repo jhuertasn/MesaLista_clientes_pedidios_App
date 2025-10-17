@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Clientes y Pagos - MesaLista</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .btn-bc {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-bc-validate {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .btn-bc-delete {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-bc-payment {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .btn-bc-history {
+            background-color: #6c757d;
+            color: white;
+        }
+    </style>
+</head>
+
+<body class="container mt-4">
+
+    <div class="card">
+        <div class="card-header">
+            <h1 class="text-center">Proyecto MesaLista - Interfaz Blockchain</h1>
+        </div>
+        <div class="card-body">
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-primary" onclick="nuevo()">NUEVO</button>
+            </div>
+
+            <h5 class="card-title">Clientes</h5>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Teléfono</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="client-table-body">
+                </tbody>
+            </table>
+            <nav>
+                <ul class="pagination justify-content-center" id="pagination-controls">
+                </ul>
+            </nav>
+            <hr>
+
+            <h5 class="card-title mt-4">Acciones de Pagos</h5>
+            <div class="d-flex gap-2">
+                <button class="btn btn-bc-payment" onclick="registrarPago()">Registrar Nuevo Pago</button>
+                <button class="btn btn-bc-history" onclick="consultarHistorial()">Consultar Historial de Pagos</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="clientes.js"></script>
+</body>
+
+</html>
