@@ -50,6 +50,12 @@ static async crearCliente(cliente) {
         await pool.query('UPDATE clientes SET activo = FALSE WHERE id = ?', [id]);
         console.log(`Cliente con ID ${id} desactivado en la base de datos.`);
     }
+
+    // NUEVA FUNCIÓN para guardar la dirección de registro
+    static async actualizarBlockchainAddress(id, direccion) {
+    await pool.query('UPDATE clientes SET blockchain_address = ? WHERE id = ?', [direccion, id]);
+    console.log(`Dirección de blockchain actualizada para el cliente ID ${id}`);
+}
 }
 
 module.exports = ClienteDbService;

@@ -52,9 +52,17 @@ const handleActualizarCliente = async (req, res) => {
 
 const handleRegistrarCliente = async (req, res) => {
     try {
+        const { id, cuenta } = req.body; // Necesitamos el ID y la cuenta
+
+        // 1. Registrar en la Blockchain
         const receipt = await ClienteBlockchainService.registrarCliente(req.body);
+
+        // 2. (NUEVO) Guardar la cuenta usada en la Base de Datos
+        await ClienteDbService.actualizarBlockchainAddress(id, cuenta);
+
         res.status(200).json({ success: true, txHash: receipt.transactionHash });
     } catch (error) {
+        console.error("ERROR DETALLADO AL REGISTRAR CLIENTE EN BC:", error);
         res.status(500).json({ success: false, message: error.message });
     }
 };

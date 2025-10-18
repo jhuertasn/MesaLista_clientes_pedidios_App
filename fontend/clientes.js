@@ -126,30 +126,66 @@ async function registrarCliente(button) {
 }
 
 async function validarCliente(clienteId) {
-    const cuenta = await obtenerCuenta();
-    if (!cuenta) return;
+    const cuentaValidacion = await obtenerCuenta(); // La cuenta que el usuario ingresa AHORA
+    if (!cuentaValidacion) return;
+
     Swal.fire({ title: 'Validando contra la Blockchain...', didOpen: () => Swal.showLoading() });
+
     try {
-        const fila = document.querySelector(`tr[data-id='${clienteId}']`);
-        const clienteDB = {
-            nombre: fila.getAttribute('data-nombre') ?? '',
-            telefono: fila.getAttribute('data-telefono') ?? '',
-            correo: fila.getAttribute('data-correo') ?? ''
-        };
-        const response = await axios.get(`${API_URL}/validar/${clienteId}?cuenta=${cuenta}`);
-        const clienteBC = response.data.data;
+        // --- PASO 1: OBTENER DATOS DE LA BD (INCLUYENDO DIRECCIÓN ORIGINAL) ---
+        // Usamos el endpoint que obtiene un solo cliente de la BD
+        const responseDB = await axios.get(`${API_URL}/${clienteId}`);
+        const clienteDB = responseDB.data.data;
 
-        const sonIguales = (clienteDB.nombre || '').trim() === (clienteBC.nombre || '').trim() &&
-            (clienteDB.telefono || '').trim() === (clienteBC.telefono || '').trim() &&
-            (clienteDB.correo || '').trim() === (clienteBC.correo || '').trim();
+        // Extraemos la dirección original guardada al registrar
+        const direccionOriginal = clienteDB.blockchain_address;
 
-        if (sonIguales) {
-            Swal.fire({ title: '¡Válido!', text: 'Los datos del cliente coinciden con el registro en la blockchain.', icon: 'success' });
-        } else {
-            Swal.fire({ title: '¡Alerta!', text: 'Los datos del cliente en la base de datos NO coinciden con el registro en la blockchain.', icon: 'error' });
+        // --- PASO 2: PRIMERA VALIDACIÓN: ¿Coincide la cuenta ingresada con la original? ---
+        if (!direccionOriginal || cuentaValidacion.toLowerCase() !== direccionOriginal.toLowerCase()) {
+            Swal.fire({
+                title: '¡Cuenta Inválida!',
+                text: 'La cuenta ingresada no coincide con la que registró originalmente a este cliente en la blockchain.',
+                icon: 'warning'
+            });
+            return; // Detenemos la validación aquí
         }
+
+        // --- PASO 3: SI LA CUENTA COINCIDE, VALIDAMOS LOS DATOS CONTRA LA BLOCKCHAIN ---
+        const responseBC = await axios.get(`${API_URL}/validar/${clienteId}?cuenta=${cuentaValidacion}`);
+        const clienteBC = responseBC.data.data;
+
+        const sonDatosIguales = (clienteDB.nombre || '').trim() === (clienteBC.nombre || '').trim() &&
+                                (clienteDB.telefono || '').trim() === (clienteBC.telefono || '').trim() &&
+                                (clienteDB.correo || '').trim() === (clienteBC.correo || '').trim();
+
+        if (sonDatosIguales) {
+            const estadoCliente = clienteBC.activo ? 'Activo ✅' : 'Inactivo ❌';
+const mensajeDetallado = `
+    <div style="text-align: left; font-family: monospace;">
+        La cuenta ingresada es correcta.<br>
+        Los datos coinciden con la blockchain.<br><br>
+        <b>Estado Actual del cliente:</b> ${estadoCliente}
+    </div>
+`;
+Swal.fire({
+    title: '¡Validación Correcta!',
+    html: mensajeDetallado, // Usamos el mensaje detallado
+    icon: 'success'
+});
+            
+            //Swal.fire({ title: '¡Válido!', text: 'La cuenta es correcta y los datos coinciden con la blockchain.', icon: 'success' });
+        } else {
+            Swal.fire({ title: '¡Alerta!', text: 'La cuenta es correcta, pero los datos en la base de datos NO coinciden con la blockchain.', icon: 'error' });
+        }
+
     } catch (error) {
-        Swal.fire('Error de Validación', 'Este cliente no ha sido registrado en la blockchain.', 'error');
+        // Manejo de errores (cliente no encontrado en BD o BC)
+        if (error.response && error.response.status === 404) {
+             Swal.fire('Error', 'No se encontró el cliente en la base de datos.', 'error');
+        } else {
+            Swal.fire('Error de Validación', 'Este cliente no ha sido registrado en la blockchain o hubo un problema al consultarlo.', 'error');
+        }
+        console.error("Error en validación:", error);
     }
 }
 

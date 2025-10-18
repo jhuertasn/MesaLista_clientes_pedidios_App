@@ -1,7 +1,7 @@
 // src/config/blockchainConfig.js
 
 // dirección de tu contrato desplegado en Ganache
-const contractAddress = '0xe40fBB4a583a19e6665E68135b13D1A00810Be9F';
+const contractAddress = '0x9c0fdb8C5E13135e88b8142604548fce0f2b6068';
 
 //Pega aquí el ABI de tu contrato
 const contractABI = [
